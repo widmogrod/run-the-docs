@@ -102,8 +102,15 @@ In your project root create file `.runthedocs.yml`
 ```yml
 type: phpunit
 examples: example/
-output: docs/examples/
+output: example/
 
 before_setup:
  - composer install
+```
+
+## Pipeline
+```
+bin/runthedoc extract --type=phpunit example/ > runthedocs.json
+bin/runthedoc generate --type=markdown --state=runthedocs.json --runner=http://localhost:8080/$id dir/
+bin/runthedoc runner --type=phpunit --state=runthedocs.json localhost:8080 
 ```
