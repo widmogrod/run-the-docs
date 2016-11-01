@@ -46,8 +46,17 @@ After parsing this file by `runthedocs` result in form of `html` should look sim
 
 
 
-And data structure should look like this:
+And data structure for one example file should look like this:
 ```json
+{
+  "file": "example/ExampleOfEitherMonadTest.php",
+  "title": "ExampleOfEitherMonadTest",
+  "examples": [
+    {
+      "id": "test_example_how_array_map_can_be_used"
+    }  
+  ]
+}
 ```
 
 ## Configuration
@@ -56,7 +65,7 @@ How to configure `runthedocs`?
 In your project root create file `.runthedocs.yml`
 ```yml
 language: php
-path: "./examples/"
+path: "./example/"
 
 setup:
  - composer install
