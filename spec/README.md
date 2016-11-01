@@ -54,7 +54,7 @@ Either Monad shows how we can fail gracefully without breaking the execution cha
 The following example demonstrates combining the contents of two files into one. 
 If one of those files does not exist the operation fails gracefully.
 
-```php
+\```php
 $read = function($file) {
     return is_file($file)
       ? Either\Right::of(file_get_contents($file))
@@ -70,9 +70,9 @@ $concat = f\liftM2(
 
 assert($concat instanceof Either\Left);
 assert($concat->extract() === 'File "./this-file-does-not-exits" does not exists');
-```
-[Run example](link-somewhere-to-run-the-code)
+\```
 
+[Run example](link-somewhere-to-run-the-code)
 ```
 
 
