@@ -86,7 +86,7 @@ assert($concat->extract() === 'File "./this-file-does-not-exits" does not exists
   "example": [
     {
       "type": "example",
-      "id": "test_example_how_array_map_can_be_used",
+      "id": "ExampleOfEitherMonadTest::test_example_how_array_map_can_be_used",
       "title": "Example how array map can be used",
       "description": "The following example demonstrates combining the contents of two files into one. If one of those files does not exist the operation fails gracefully.",
       "code": "/*...*/"
@@ -100,11 +100,10 @@ How to configure `runthedocs`?
 
 In your project root create file `.runthedocs.yml`
 ```yml
-language: php
-path: "./example/"
+type: phpunit
+examples: example/
+output: docs/examples/
 
-setup:
+before_setup:
  - composer install
- 
-runner: "./vendor/bin/phpunit -c $path"
 ```
