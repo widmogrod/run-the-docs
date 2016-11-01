@@ -43,7 +43,8 @@ class ExampleOfEitherMonadTest extends PHPUnit
 
 After parsing this file by `runthedocs` result in form of `markdown` should look similart to this:
 ```markdown
-# ExampleOfEitherMonadTest
+# Example Of Either Monad
+## Introduction
 In php world, the most popular way of saying that something went wrong is to throw an exception. 
 This results in nasty try catch blocks and many of if statements. 
  
