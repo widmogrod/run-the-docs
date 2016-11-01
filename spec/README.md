@@ -1,4 +1,4 @@
-# Specification 
+# Specification (Draft) 
 ## Introduction
 
 Lets consider an example file:
@@ -6,13 +6,6 @@ Lets consider an example file:
 ```php
 use Widmogrod\Functional as f;
 use Widmogrod\Monad\Either;
-
-function example_read($file) 
-{
-    return is_file($file)
-        ? Either\Right::of(file_get_contents($file))
-        : Either\Left::of(sprintf('File "%s" does not exists', $file));
-}
 
 /**
  * In php world, the most popular way of saying that something went wrong is to throw an exception. 
@@ -28,9 +21,15 @@ class ExampleOfEitherMonadTest extends PHPUnit
     */
    public function test_example_how_array_map_can_be_used() 
    {
+      $read = function($file) {
+       return is_file($file)
+         ? Either\Right::of(file_get_contents($file))
+         : Either\Left::of(sprintf('File "%s" does not exists', $file));
+      };
+      
       $concat = f\liftM2(
-          example_read(__FILE__),
-          example_read('./this-file-does-not-exits'),
+          $read(__FILE__),
+          $read('./this-file-does-not-exits'),
           function ($first, $second) {
               return $first . $second;
           }
@@ -42,8 +41,38 @@ class ExampleOfEitherMonadTest extends PHPUnit
 }
 ```
 
-After parsing this file by `runthedocs` result in form of `html` should look similart to this:
+After parsing this file by `runthedocs` result in form of `markdown` should look similart to this:
+```markdown
+# ExampleOfEitherMonadTest
+In php world, the most popular way of saying that something went wrong is to throw an exception. 
+This results in nasty try catch blocks and many of if statements. 
+ 
+Either Monad shows how we can fail gracefully without breaking the execution chain and making the code more readable. 
 
+## Example how array map can be used
+The following example demonstrates combining the contents of two files into one. 
+If one of those files does not exist the operation fails gracefully.
+
+```php
+$read = function($file) {
+    return is_file($file)
+      ? Either\Right::of(file_get_contents($file))
+      : Either\Left::of(sprintf('File "%s" does not exists', $file));
+};
+$concat = f\liftM2(
+    example_read(__FILE__),
+    example_read('./this-file-does-not-exits'),
+    function ($first, $second) {
+      return $first . $second;
+    }
+);
+
+assert($concat instanceof Either\Left);
+assert($concat->extract() === 'File "./this-file-does-not-exits" does not exists');
+```
+[Run example](link-somewhere-to-run-the-code)
+
+```
 
 
 And data structure for one example file should look like this:
