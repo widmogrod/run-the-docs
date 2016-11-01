@@ -1,0 +1,16 @@
+{
+    "name": "widmogrod/run-the-docs",
+    "description": "Keep code and documentation in sync. Run code examples in a browser",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "widmogrod",
+            "email": "widmogrod@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-0": {
+            "RunTheDocs": "src/"
+        }
+    }
+}
