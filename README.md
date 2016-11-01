@@ -3,6 +3,8 @@
 Keep code and documentation in sync. 
 Run code examples in a browser.
 
+[Specificaton (Draft)](spec/README.md)
+
 **Core concepts:**
 
 - [ ] **Language agnostic.** Generates documentation from any programming language.
