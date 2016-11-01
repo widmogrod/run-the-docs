@@ -49,3 +49,17 @@ After parsing this file by `runthedocs` result in form of `html` should look sim
 And data structure should look like this:
 ```json
 ```
+
+## Configuration
+How to configure `runthedocs`?
+
+In your project root create file `.runthedocs.yml`
+```yml
+language: php
+path: "./examples/"
+
+setup:
+ - composer install
+ 
+runner: "./vendor/bin/phpunit -c $path"
+```
