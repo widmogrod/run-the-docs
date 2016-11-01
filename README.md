@@ -5,7 +5,7 @@ Run code examples in a browser.
 
 [Specificaton (Draft)](spec/README.md)
 
-**Core concepts:**
+## Core concepts
 
 - [ ] **Language agnostic.** Generates documentation from any programming language.
 - [ ] **Code is documentation.** Keeping documentation inlined in code makes it's easier to be in sync with actual state of the codebase.
