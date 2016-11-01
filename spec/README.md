@@ -75,15 +75,17 @@ assert($concat->extract() === 'File "./this-file-does-not-exits" does not exists
 [Run example](link-somewhere-to-run-the-code)
 ```
 
-
-And data structure for one example file should look like this:
+## Data structure
+### Structure for one example
 ```json
 {
-  "file": "example/ExampleOfEitherMonadTest.php",
+  "type": "group",
+  "id": "example/ExampleOfEitherMonadTest.php",
   "title": "Example Of Either Monad",
   "description": "In php world, the most popular way of saying that something went wrong is to throw an exception. \nThis results in nasty try catch blocks and many of if statements. \n\nEither Monad shows how we can fail gracefully without breaking the execution chain and making the code more readable.",
-  "examples": [
+  "example": [
     {
+      "type": "example",
       "id": "test_example_how_array_map_can_be_used",
       "title": "Example how array map can be used",
       "description": "The following example demonstrates combining the contents of two files into one. If one of those files does not exist the operation fails gracefully.",
