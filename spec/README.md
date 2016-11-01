@@ -80,10 +80,14 @@ And data structure for one example file should look like this:
 ```json
 {
   "file": "example/ExampleOfEitherMonadTest.php",
-  "title": "ExampleOfEitherMonadTest",
+  "title": "Example Of Either Monad",
+  "description": "In php world, the most popular way of saying that something went wrong is to throw an exception. \nThis results in nasty try catch blocks and many of if statements. \n\nEither Monad shows how we can fail gracefully without breaking the execution chain and making the code more readable.",
   "examples": [
     {
-      "id": "test_example_how_array_map_can_be_used"
+      "id": "test_example_how_array_map_can_be_used",
+      "title": "Example how array map can be used",
+      "description": "The following example demonstrates combining the contents of two files into one. If one of those files does not exist the operation fails gracefully.",
+      "code": "/*...*/"
     }  
   ]
 }
