@@ -16,12 +16,84 @@ interface AsHeadAndTail
 }
 
 
-interface Listt extends ListEmpty, AsHeadAndTail {
-    public function head();
-    public function tail(): Listt;
-    public static function fromArray(array $array): Listt;
+interface At
+{
+    public function at(int $position);
+
+    public function count(): int;
 }
 
+class ArrayAt implements At
+{
+    private $items;
+
+    public function __construct(array $items)
+    {
+        $this->items = $items;
+    }
+
+    public function count():int
+    {
+        return count($this->items);
+    }
+
+    public function at(int $position)
+    {
+        if (!isset($this->items[$position])) {
+            throw new \Exception(sprintf(
+                'ArrayAt cannot take item at position %d, max %s',
+                $position, $this->count() - 1
+            ));
+        }
+
+        return $this->items[$position];
+    }
+
+
+}
+
+class AppendedAt implements At
+{
+    private $items;
+    private $value;
+
+    public function __construct(At $items, $value)
+    {
+        $this->items = $items;
+        $this->value = $value;
+    }
+
+    public function count():int
+    {
+        return $this->items->count() + 1;
+    }
+
+    public function at(int $position)
+    {
+        if ($this->count() - 1 === $position) {
+            return $this->value;
+        } else {
+            return $this->items->at($position);
+        }
+    }
+}
+
+interface Listt extends ListEmpty, AsHeadAndTail
+{
+    public function head();
+
+    public function tail(): Listt;
+
+    public function at(int $position);
+
+    public static function fromArray(array $array): Listt;
+
+    public function append($value): Listt;
+
+    public function concat(Listt $list): Listt;
+
+    public function reduce(callable $function, $value);
+}
 
 class AList implements Listt
 {
@@ -32,11 +104,15 @@ class AList implements Listt
     public static function fromArray(array $array): Listt
     {
         $array = array_values($array);
-        return new static(new \ArrayObject($array), 0, empty($array));
+
+        return new static(new ArrayAt($array), 0, empty($array));
     }
 
-    private function __construct(\ArrayObject $items, int $position, bool $isEmpty)
-    {
+    private function __construct(
+        At $items,
+        int $position,
+        bool $isEmpty
+    ) {
         $this->items = $items;
         $this->position = $position;
         $this->isEmpty = $isEmpty;
@@ -50,7 +126,7 @@ class AList implements Listt
     public function asHeadAndTail(): array
     {
         if ($this->isEmpty()) {
-            throw new \Exception('EmptyList cannot take head and tail');
+            throw new \Exception('AList cannot take head and tail');
         }
 
         return [$this->head(), $this->tail()];
@@ -59,18 +135,51 @@ class AList implements Listt
     public function head()
     {
         if ($this->isEmpty()) {
-            throw new \Exception('EmptyList cannot take head');
+            throw new \Exception('AList cannot take head');
         }
 
-        return $this->items[$this->position];
+        return $this->items->at($this->position);
     }
 
     public function tail() : Listt
     {
         $next = $this->position + 1;
-        return isset($this->items[$next])
+
+        return $this->items->count() > $next
             ? new static($this->items, $next, false)
             : new static($this->items, $next, true);
+    }
+
+    public function at(int $position)
+    {
+        $pos = $this->position + $position;
+
+        return $this->items->at($pos);
+    }
+
+    public function append($value): Listt
+    {
+        return new static(
+            new AppendedAt($this->items, $value),
+            0,
+            false
+        );
+    }
+
+    public function concat(Listt $list): Listt
+    {
+        return $list->reduce(function (Listt $result, $item) {
+            return $result->append($item);
+        }, $this);
+    }
+
+    public function reduce(callable $function, $value)
+    {
+        for ($i = $this->position; $i < $this->items->count(); $i++) {
+            $value = $function($value, $this->at($i));
+        }
+
+        return $value;
     }
 }
 
@@ -82,6 +191,14 @@ interface Token
 
 class TokenClassWithDesc implements Token
 {
+    private $desc;
+    private $name;
+
+    public function __construct(PHPToken $desc, PHPToken $name)
+    {
+        $this->desc = $desc;
+        $this->name = $name;
+    }
 }
 
 class TokenMethodWithDesc implements Token
@@ -148,11 +265,19 @@ function tokenize(PHPTokenList $list) : TokenList
         return TokenList::fromArray([]);
     }
 
-    if (isClassWithDescription($list)) {
-        return classWithDescription($list);
-    }
+//    if (isClassWithDescription($list)) {
+//        return classWithDescription($list);
+//    }
 
-    return tokenize($list->tail());
+    return isClassWithDescription2($list)
+        ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
+            return classWithDescription2($matchList, $tokenList);
+        }, function () use ($list) {
+            return tokenize($list->tail());
+        });
+
+//    return tokenize($list->tail());
+
 //    elseif (isMethodWithDescription($list)) {
 //        return methodWithDescription($list);
 //    } elseif (isMethodBody($list)) {
@@ -172,8 +297,35 @@ function isClassWithDescription(PHPTokenList $tokenList): bool
     );
 }
 
-function classWithDescription(PHPTokenList $tokenList): TokenList {
+function classWithDescription(PHPTokenList $tokenList): TokenList
+{
+    return TokenList::fromArray([
+        new TokenClassWithDesc(
+            $tokenList->at(4),
+            $tokenList->at(0)
+        )
+    ]);
+}
 
+function isClassWithDescription2(PHPTokenList $tokenList): MatchResult
+{
+    return match2(
+        PatternList::fromArray(
+            [T_DOC_COMMENT, T_WHITESPACE, T_CLASS, T_WHITESPACE, T_STRING]
+        ),
+        $tokenList,
+        MatchList::fromArray([])
+    );
+}
+
+function classWithDescription2(MatchList $matchList, PHPTokenList $tokenList): TokenList
+{
+    return TokenList::fromArray([
+        new TokenClassWithDesc(
+            $matchList->at(4),
+            $matchList->at(0)
+        )
+    ])->concat(tokenize($tokenList));
 }
 
 
@@ -182,21 +334,90 @@ class PatternList extends AList
 
 }
 
+
+// match [] _ : true
+// match _ []: false
+// match [p:px] [t:tx] => p == t ? match(px, tx) : false
+
+
 function match(PatternList $patternList, PHPTokenList $tokenList): bool
 {
     if ($patternList->isEmpty()) {
         var_dump('$list->isEmpty()');
+
         return true;
     }
 
     if ($tokenList->isEmpty()) {
         var_dump('$tokenList->isEmpty()');
+
         return false;
     }
 
     return $tokenList->head()->match($patternList->head())
         ? match($patternList->tail(), $tokenList->tail())
         : false;
+}
+
+interface MatchResult
+{
+    public function then(callable $matched, callable $else);
+}
+
+class Matched implements MatchResult
+{
+    private $matchList;
+    private $tokenList;
+
+    public function __construct(MatchList $matchList, PHPTokenList $tokenList)
+    {
+        $this->matchList = $matchList;
+        $this->tokenList = $tokenList;
+    }
+
+    public function then(callable $matched, callable $else)
+    {
+        return $matched($this->matchList, $this->tokenList);
+    }
+}
+
+class Miss implements MatchResult
+{
+    public function then(callable $matched, callable $else)
+    {
+        return $else();
+    }
+}
+
+// match2: [a] -> [b] -> ([b], [b])
+// match2 [p:px] [t:tx] [m] :: p == t ? [t:m, tx]
+// match2 [p:px] [t:tx] [m] :: p != t ? [t:m, tx]
+
+//function macheAgg():
+
+class MatchList extends AList
+{
+}
+
+
+function match2(PatternList $patternList, PHPTokenList $tokenList, MatchList $matchList): MatchResult
+{
+    if ($patternList->isEmpty()) {
+        return new Matched($matchList, $tokenList);
+    }
+
+    if ($tokenList->isEmpty()) {
+        return new Miss();
+    }
+
+    $pattern = $patternList->head();
+    $token = $tokenList->head();
+
+    if ($token->match($pattern)) {
+        return match2($patternList->tail(), $tokenList->tail(), $matchList->append($token));
+    }
+
+    return new Miss();
 }
 
 class BufferedList
