@@ -223,11 +223,16 @@ class PHPToken
     private $type;
     private $value;
 
-    public static function fromNative(array $token): PHPToken
+    public static function fromArray(array $token): PHPToken
     {
         list($type, $value) = $token;
 
         return new self($type, $value);
+    }
+
+    public static function fromString(string $token)
+    {
+        return new self($token, $token);
     }
 
     private function __construct($type, $value)
@@ -247,7 +252,11 @@ class PHPTokenList extends AList
     public static function fromTokenList(array $list): Listt
     {
         return self::fromArray(array_map(function ($token) {
-            return PHPToken::fromNative($token);
+            if (is_array($token)) {
+                return PHPToken::fromArray($token);
+            } else {
+                return PHPToken::fromString($token);
+            }
         }, $list));
     }
 
@@ -501,11 +510,6 @@ class PhpunitGenerator implements Generator
     public function generate(ValueObject\File $file): DTO\GroupOfExamples
     {
         $tokens = token_get_all($file->getContents(), TOKEN_PARSE);
-        $tokens = array_filter($tokens, 'is_array');
-        $tokenList = PHPTokenList::fromTokenList($tokens);
-        $tokenizeResult = tokenize($tokenList);
-        var_dump($tokenizeResult, '$tokenizeResult');
-        die;
 //        foreach ($tokens as $token) {
 //            if (is_array($token)) {
 //                list($type, $value, $line) = $token;
@@ -514,6 +518,12 @@ class PhpunitGenerator implements Generator
 //                echo "Token $token", PHP_EOL;
 //            }
 //        }
+//        die;
+//        $tokens = array_filter($tokens, 'is_array');
+        $tokenList = PHPTokenList::fromTokenList($tokens);
+        $tokenizeResult = tokenize($tokenList);
+        var_dump($tokenizeResult, '$tokenizeResult');
+        die;
 
         $classWithDescription = $this->match(
             [T_DOC_COMMENT, T_WHITESPACE, T_CLASS, T_WHITESPACE, T_STRING],
