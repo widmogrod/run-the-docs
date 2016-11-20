@@ -203,6 +203,14 @@ class TokenClassWithDesc implements Token
 
 class TokenMethodWithDesc implements Token
 {
+    private $desc;
+    private $name;
+
+    public function __construct(PHPToken $desc, PHPToken $name)
+    {
+        $this->desc = $desc;
+        $this->name = $name;
+    }
 }
 
 class TokenMethodBody implements Token
@@ -273,7 +281,12 @@ function tokenize(PHPTokenList $list) : TokenList
         ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
             return classWithDescription2($matchList, $tokenList);
         }, function () use ($list) {
-            return tokenize($list->tail());
+            return isMethodWithDescription2($list)
+                ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
+                    return methodWithDescription2($matchList, $tokenList);
+                }, function () use ($list) {
+                    return tokenize($list->tail());
+                });
         });
 
 //    return tokenize($list->tail());
@@ -328,6 +341,26 @@ function classWithDescription2(MatchList $matchList, PHPTokenList $tokenList): T
     ])->concat(tokenize($tokenList));
 }
 
+function isMethodWithDescription2(PHPTokenList $tokenList): MatchResult
+{
+    return match2(
+        PatternList::fromArray(
+            [T_DOC_COMMENT, T_WHITESPACE, T_PUBLIC, T_WHITESPACE, T_FUNCTION, T_WHITESPACE, T_STRING]
+        ),
+        $tokenList,
+        MatchList::fromArray([])
+    );
+}
+
+function methodWithDescription2(MatchList $matchList, PHPTokenList $tokenList): TokenList
+{
+    return TokenList::fromArray([
+        new TokenMethodWithDesc(
+            $matchList->at(6),
+            $matchList->at(0)
+        )
+    ])->concat(tokenize($tokenList));
+}
 
 class PatternList extends AList
 {
