@@ -215,7 +215,15 @@ class TokenMethodWithDesc implements Token
 
 class TokenMethodBody implements Token
 {
+    private $matchList;
 
+    public function __construct(MatchList $matchList)
+    {
+        $this->matchList = $matchList->reduce(function (string $result, PHPToken $token) {
+            return $result . $token;
+        }, '');
+//        $this->matchList = $matchList;
+    }
 }
 
 class PHPToken
@@ -244,6 +252,11 @@ class PHPToken
     public function match($type)
     {
         return $this->type === $type;
+    }
+
+    public function __toString()
+    {
+        return $this->value;
     }
 }
 
@@ -294,7 +307,12 @@ function tokenize(PHPTokenList $list) : TokenList
                 ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
                     return methodWithDescription2($matchList, $tokenList);
                 }, function () use ($list) {
-                    return tokenize($list->tail());
+                    return isMethodBody($list)
+                        ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
+                            return methodBody2($matchList, $tokenList);
+                        }, function () use ($list) {
+                            return tokenize($list->tail());
+                        });
                 });
         });
 
@@ -367,6 +385,25 @@ function methodWithDescription2(MatchList $matchList, PHPTokenList $tokenList): 
         new TokenMethodWithDesc(
             $matchList->at(6),
             $matchList->at(0)
+        )
+    ])->concat(tokenize($tokenList));
+}
+
+function isMethodBody(PHPTokenList $tokenList): MatchResult
+{
+    return matchBetween(
+        PatternList::fromArray(['(', ')', T_WHITESPACE, '{']),
+//        PatternList::fromArray(['}']),
+        $tokenList,
+        MatchList::fromArray([])
+    );
+}
+
+function methodBody2(MatchList $matchList, PHPTokenList $tokenList): TokenList
+{
+    return TokenList::fromArray([
+        new TokenMethodBody(
+            $matchList
         )
     ])->concat(tokenize($tokenList));
 }
@@ -460,6 +497,53 @@ function match2(PatternList $patternList, PHPTokenList $tokenList, MatchList $ma
     }
 
     return new Miss();
+}
+
+function matchBetween(
+    PatternList $startList,
+//    PatternList $endList,
+    PHPTokenList $tokenList,
+    MatchList $matchList
+): MatchResult
+{
+    return match2($startList, $tokenList, $matchList)
+        // we have beginning
+        ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
+            // mach between
+            return matchUntil(function (PHPToken $token, MatchList $matchedList) {
+                if (!$token->match('}')) {
+                    return false;
+                }
+
+                $eql = function ($value) {
+                    return function ($count, PHPToken $matched) use ($value) {
+                        return $value === (string) $matched ? $count + 1 : $count;
+                    };
+                };
+
+                $open = $matchedList->reduce($eql('{'), 0);
+                $close = $matchedList->reduce($eql('}'), 0);
+
+                return $open === $close;
+
+            }, $tokenList, MatchList::fromArray([]));
+        }, function () {
+            return new Miss();
+        });
+}
+
+function matchUntil(callable $check, PHPTokenList $tokenList, MatchList $matchList): MatchResult
+{
+    if ($tokenList->isEmpty()) {
+        return new Miss();
+    }
+
+    $head = $tokenList->head();
+    if ($check($head, $matchList)) {
+        return new Matched($matchList, $tokenList->tail());
+    } else {
+        return matchUntil($check, $tokenList->tail(), $matchList->append($head));
+    }
 }
 
 class BufferedList

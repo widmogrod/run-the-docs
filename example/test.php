@@ -1,4 +1,5 @@
 <?php
+
 /**
  * In php world, the most popular way of saying that something went wrong is to throw an exception.
  * This results in nasty try catch blocks and many of if statements.
@@ -13,7 +14,7 @@ class ExampleOfEitherMonadTest extends PHPUnit
      */
     public function test_example_how_array_map_can_be_used()
     {
-        $read = function($file) {
+        $read = function ($file) {
             return is_file($file)
                 ? Either\Right::of(file_get_contents($file))
                 : Either\Left::of(sprintf('File "%s" does not exists', $file));
@@ -29,5 +30,13 @@ class ExampleOfEitherMonadTest extends PHPUnit
 
         assert($concat instanceof Either\Left);
         assert($concat->extract() === 'File "./this-file-does-not-exits" does not exists');
+    }
+
+    /**
+     * Hohohoho!
+     */
+    public function test_second_example()
+    {
+        return 'awesome';
     }
 }
