@@ -199,6 +199,16 @@ class TokenClassWithDesc implements Token
         $this->desc = $desc;
         $this->name = $name;
     }
+
+    public function getDesc():string
+    {
+        return $this->desc->getValue();
+    }
+
+    public function getName(): string
+    {
+        return $this->name->getValue();
+    }
 }
 
 class TokenMethodWithDesc implements Token
@@ -211,6 +221,16 @@ class TokenMethodWithDesc implements Token
         $this->desc = $desc;
         $this->name = $name;
     }
+
+    public function getDesc():string
+    {
+        return $this->desc->getValue();
+    }
+
+    public function getName(): string
+    {
+        return $this->name->getValue();
+    }
 }
 
 class TokenMethodBody implements Token
@@ -219,10 +239,14 @@ class TokenMethodBody implements Token
 
     public function __construct(MatchList $matchList)
     {
-        $this->matchList = $matchList->reduce(function (string $result, PHPToken $token) {
+        $this->matchList = (string)$matchList->reduce(function (string $result, PHPToken $token) {
             return $result . $token;
         }, '');
-//        $this->matchList = $matchList;
+    }
+
+    public function __toString()
+    {
+        return $this->matchList;
     }
 }
 
@@ -256,6 +280,11 @@ class PHPToken
 
     public function __toString()
     {
+        return $this->getValue();
+    }
+
+    public function getValue()
+    {
         return $this->value;
     }
 }
@@ -281,7 +310,12 @@ class PHPTokenList extends AList
 
 class TokenList extends AList
 {
-
+    public function toString()
+    {
+        return $this->reduce(function (string $result, Token $token) {
+            return $result . sprintf('%s()', get_class($token));
+        }, '');
+    }
 }
 
 function error(string $reason, PHPToken $token): TokenList
@@ -517,7 +551,7 @@ function matchBetween(
 
                 $eql = function ($value) {
                     return function ($count, PHPToken $matched) use ($value) {
-                        return $value === (string) $matched ? $count + 1 : $count;
+                        return $value === (string)$matched ? $count + 1 : $count;
                     };
                 };
 
@@ -546,6 +580,194 @@ function matchUntil(callable $check, PHPTokenList $tokenList, MatchList $matchLi
     }
 }
 
+// Tree = DocsNode String String Tree
+//      | GroupNode Tree Tree
+//      | CodeNode String
+
+interface Tree
+{
+
+}
+
+class DocsNode implements Tree
+{
+    private $name;
+    private $desc;
+    private $tree;
+
+    public function __construct(string $name, string $desc, Tree $tree)
+    {
+        $this->name = $name;
+        $this->desc = $desc;
+        $this->tree = $tree;
+    }
+}
+
+class CodeNode implements Tree
+{
+    private $body;
+
+    public function __construct(string $body)
+    {
+        $this->body = $body;
+    }
+}
+
+
+class GroupNode implements Tree
+{
+    private $left;
+    private $right;
+
+    public function __construct(Tree $left, Tree $right)
+    {
+        $this->left = $left;
+        $this->right = $right;
+    }
+}
+
+//new Docs('Class', 'desc',
+//    new Group(
+//        new Group(
+//            new Docs('method1', 'desc', new Code('{}')),
+//            new Docs('method2', 'desc', new Code('{}'))
+//        ),
+//        new Group(
+//            new Docs('method3', 'desc', new Code('{}')),
+//            new Docs('method4', 'desc', new Code('{}'))
+//        )
+//    )
+//);
+
+
+class TreeToken
+{
+    private $tree;
+    private $tokenList;
+
+    public function __construct(Tree $tree, TokenList $tokenList)
+    {
+        $this->tree = $tree;
+        $this->tokenList = $tokenList;
+    }
+
+    public function getTree(): Tree
+    {
+        return $this->tree;
+    }
+
+    public function getTokenList(): TokenList
+    {
+        return $this->tokenList;
+    }
+}
+
+class TokenEnd implements Token
+{
+
+}
+
+function lookAhead(TokenList $list): Token
+{
+    if ($list->isEmpty()) {
+        return new TokenEnd();
+    }
+    return $list->head();
+}
+
+function accept(TokenList $list): TokenList
+{
+//    if ($list->isEmpty()) {
+//        throw new \Error('nothing to accept');
+//    }
+    return $list->tail();
+}
+
+function parse(TokenList $tokenList): Tree
+{
+    $group = group($tokenList);
+
+    $tree = $group->getTree();
+    $remainingTokens = $group->getTokenList();
+
+    if (!$remainingTokens->isEmpty()) {
+        throw new \Exception('Leftover tokens:' . $remainingTokens->toString());
+    }
+
+    return $tree;
+}
+
+function doc(TokenList $tokenList): TreeToken
+{
+    $value = lookAhead($tokenList);
+    if ($value instanceof TokenClassWithDesc) {
+        $group = doc(accept($tokenList));
+
+        return new TreeToken(
+            new DocsNode(
+                $value->getName(),
+                $value->getDesc(),
+                $group->getTree()
+            ),
+            $group->getTokenList()
+        );
+    }
+
+    if ($value instanceof TokenMethodWithDesc) {
+        $code = code(accept($tokenList));
+
+        return new TreeToken(
+            new DocsNode(
+                $value->getName(),
+                $value->getDesc(),
+                $code->getTree()
+            ),
+            $code->getTokenList()
+        );
+    }
+
+    throw new \Exception('doc: parse error on token: ' . $tokenList->toString());
+}
+
+function group(TokenList $tokenList): TreeToken
+{
+    $doc = doc($tokenList);
+    $tree = $doc->getTree();
+    $remainingTokens = $doc->getTokenList();
+
+    $value = lookAhead($remainingTokens);
+    if ($value instanceof TokenMethodWithDesc) {
+        $doc = group($remainingTokens);
+
+        return new TreeToken(
+            new GroupNode(
+                $tree,
+                $doc->getTree()
+            ),
+            accept($doc->getTokenList())
+        );
+    }
+
+    if ($value instanceof TokenEnd) {
+        return $doc;
+    }
+
+    throw new \Exception('group: parse error on token: ' . $tokenList->toString());
+}
+
+function code(TokenList $tokenList): TreeToken
+{
+    $value = lookAhead($tokenList);
+    if ($value instanceof TokenMethodBody) {
+        return new TreeToken(
+            new CodeNode($value),
+            accept($tokenList)
+        );
+    }
+
+    throw new \Exception('code: parse error on token: ' . $tokenList->toString());
+}
+
 class PhpunitGenerator implements Generator
 {
     public function generate(ValueObject\File $file): DTO\GroupOfExamples
@@ -553,25 +775,31 @@ class PhpunitGenerator implements Generator
         $tokens = token_get_all($file->getContents(), TOKEN_PARSE);
         $tokenList = PHPTokenList::fromTokenList($tokens);
         $tokenizeResult = tokenize($tokenList);
-        $result = $tokenizeResult->reduce(function(array $result, Token $token){
+        $result = $tokenizeResult->reduce(function (array $result, Token $token) {
             $result[] = $token;
             return $result;
         }, []);
-        var_dump($result, '$tokenizeResult');
+
+
+        $tree = parse(TokenList::fromArray($result));
+        var_dump($tree);
         die;
 
-        return new DTO\GroupOfExamples(
-            $c['result']['id'],
-            $c['result']['title'],
-            $c['result']['description'],
-            [
-                new DTO\Example(
-                    $m['result']['id'],
-                    $m['result']['title'],
-                    $m['result']['description'],
-                    $m['result']['code']
-                )
-            ]
-        );
+//        var_dump($result, '$tokenizeResult');
+//        die;
+
+//        return new DTO\GroupOfExamples(
+//            $c['result']['id'],
+//            $c['result']['title'],
+//            $c['result']['description'],
+//            [
+//                new DTO\Example(
+//                    $m['result']['id'],
+//                    $m['result']['title'],
+//                    $m['result']['description'],
+//                    $m['result']['code']
+//                )
+//            ]
+//        );
     }
 }
