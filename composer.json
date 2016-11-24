@@ -12,5 +12,8 @@
         "psr-0": {
             "RunTheDocs": "src/"
         }
+    },
+    "require": {
+        "phpdocumentor/reflection-docblock": "^3.1"
     }
 }
