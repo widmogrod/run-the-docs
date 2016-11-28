@@ -1,9 +1,9 @@
 <?php
-namespace RunTheDocs\Generator;
+namespace RunTheDocs\Extractor;
 
 use RunTheDocs\DTO;
 
-interface Generator
+interface Extractor
 {
     public function generate(ValueObject\File $file): DTO\GroupOfExamples;
 }

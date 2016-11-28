@@ -1,5 +1,5 @@
 <?php
-namespace RunTheDocs\Generator\ValueObject;
+namespace RunTheDocs\Extractor\ValueObject;
 
 class File
 {

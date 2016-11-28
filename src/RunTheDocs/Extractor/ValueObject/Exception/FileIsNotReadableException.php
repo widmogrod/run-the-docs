@@ -1,5 +1,5 @@
 <?php
-namespace RunTheDocs\Generator\ValueObject\Exception;
+namespace RunTheDocs\Extractor\ValueObject\Exception;
 
 class FileIsNotReadableException extends Exception
 {

@@ -1,9 +1,8 @@
 <?php
-namespace RunTheDocs\Generator\Generator;
+namespace RunTheDocs\Extractor;
 
 use RunTheDocs\DTO;
-use RunTheDocs\Generator\Generator;
-use RunTheDocs\Generator\ValueObject;
+use RunTheDocs\Extractor\ValueObject;
 
 interface ListEmpty
 {
@@ -768,7 +767,7 @@ function code(TokenList $tokenList): TreeToken
     throw new \Exception('code: parse error on token: ' . $tokenList->toString());
 }
 
-class PhpunitGenerator implements Generator
+class PhpunitExtractor implements Extractor
 {
     public function generate(ValueObject\File $file): DTO\GroupOfExamples
     {
