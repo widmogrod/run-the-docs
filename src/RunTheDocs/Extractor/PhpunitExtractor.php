@@ -769,7 +769,7 @@ function code(TokenList $tokenList): TreeToken
 
 class PhpunitExtractor implements Extractor
 {
-    public function generate(ValueObject\File $file): DTO\GroupOfExamples
+    public function extract(ValueObject\File $file): DTO\GroupOfExamples
     {
         $tokens = token_get_all($file->getContents(), TOKEN_PARSE);
         $tokenList = PHPTokenList::fromTokenList($tokens);
