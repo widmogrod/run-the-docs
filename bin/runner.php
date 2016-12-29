@@ -38,8 +38,7 @@ If one of those files does not exist the operation fails gracefully.',
 );
 
 $runner = new \RunTheDocs\Runner\PhpunitRunner(
-    './vendor/bin/phpunit',
-    $dto
+    './vendor/bin/phpunit'
 );
 
 $result = $runner->run(

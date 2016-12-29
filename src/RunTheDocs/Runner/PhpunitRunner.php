@@ -17,7 +17,7 @@ class PhpunitRunner implements Runner
     public function run(ValueObject\GroupID $group, ValueObject\ExampleID $example): ValueObject\Result
     {
         $cmd = '%s --filter=%s::%s';
-        $cmd = sprintf($cmd, $this->bin, $group->asString(), $example->asString());
+        $cmd = sprintf($cmd, escapeshellcmd($this->bin), escapeshellarg($group->asString()), escapeshellarg($example->asString()));
 
         exec($cmd, $output);
 
