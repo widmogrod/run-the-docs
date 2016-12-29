@@ -13,6 +13,9 @@
             "RunTheDocs": "src/"
         }
     },
+    "scripts": {
+        "server": "php -S localhost:8877 -t app/"
+    },
     "require": {
         "phpdocumentor/reflection-docblock": "^3.1"
     },
