@@ -1,7 +1,8 @@
 <?php
-namespace RunTheDocs\Extractor;
+namespace RunTheDocsPHPUnit;
 
 use RunTheDocs\DTO;
+use RunTheDocs\Extractor\Extractor;
 use RunTheDocs\Extractor\ValueObject;
 
 interface ListEmpty

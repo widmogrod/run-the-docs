@@ -37,7 +37,7 @@ If one of those files does not exist the operation fails gracefully.',
 
 );
 
-$runner = new \RunTheDocs\Runner\PhpunitRunner(
+$runner = new \RunTheDocsPHPUnit\PhpunitRunner(
     './vendor/bin/phpunit'
 );
 

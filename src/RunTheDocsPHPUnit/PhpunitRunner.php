@@ -1,5 +1,8 @@
 <?php
-namespace RunTheDocs\Runner;
+namespace RunTheDocsPHPUnit;
+
+use RunTheDocs\Runner\Runner;
+use RunTheDocs\Runner\ValueObject;
 
 class PhpunitRunner implements Runner
 {
