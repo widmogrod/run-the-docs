@@ -1,0 +1,17 @@
+<html>
+<head>
+    <link rel="stylesheet" href="css/main.css">
+</head>
+<body>
+    <h1>{{ groupOfExamples.title }}</h1>
+    <p>{{ groupOfExamples.description }}</p>
+
+    {% for example in groupOfExamples.examples %}
+        <h2>{{ example.title }}</h2>
+        <p>{{ example.description }}</p>
+        <pre>{{ example.code }}</pre>
+    {% endfor %}
+
+    <script src="js/main.js" async></script>
+</body>
+</html>

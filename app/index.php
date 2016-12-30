@@ -55,6 +55,8 @@ if (isset($_GET['gid']) && isset($_GET['eid'])) {
 
 } else {
     // display
-    $generator = new \RunTheDocs\Generator\Html\Html();
+    $loader = new Twig_Loader_Filesystem(__DIR__ . '/twig/');
+    $twig = new \Twig_Environment($loader);
+    $generator = new \RunTheDocs\Generator\Twig\TwigGenerator($twig, 'index.twig');
     echo $generator->generate($dto);
 }
