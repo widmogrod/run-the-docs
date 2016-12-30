@@ -10,6 +10,7 @@
         <h2>{{ example.title }}</h2>
         <p>{{ example.description }}</p>
         <pre>{{ example.code }}</pre>
+        <a href="?gid={{ groupOfExamples.id }}&eid={{ example.id }}" id="href">Run example</a>
     {% endfor %}
 
     <script src="js/main.js" async></script>

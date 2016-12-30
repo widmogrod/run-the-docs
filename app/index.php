@@ -45,13 +45,16 @@ If one of those files does not exist the operation fails gracefully.',
 if (isset($_GET['gid']) && isset($_GET['eid'])) {
     // executed
     $runner = new \RunTheDocsPHPUnit\PhpunitRunner(
-        './vendor/bin/phpunit'
+        realpath(__DIR__ . '/../vendor/bin/phpunit')
+        . ' -c ../phpunit.xml.dist'
     );
 
     $result = $runner->run(
         new \RunTheDocs\Runner\ValueObject\GroupID($_GET['gid']),
         new \RunTheDocs\Runner\ValueObject\ExampleID($_GET['eid'])
     );
+
+    echo $result->asString();
 
 } else {
     // display

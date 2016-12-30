@@ -9,4 +9,9 @@ class Result
     {
         $this->value = $value;
     }
+
+    public function asString()
+    {
+        return $this->value;
+    }
 }
