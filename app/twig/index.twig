@@ -2,7 +2,7 @@
 <head>
     <link rel="stylesheet" href="css/main.css">
 </head>
-<body>
+<body id="main">
     <h1>{{ groupOfExamples.title }}</h1>
     <p>{{ groupOfExamples.description }}</p>
 
@@ -10,7 +10,10 @@
         <h2>{{ example.title }}</h2>
         <p>{{ example.description }}</p>
         <pre>{{ example.code }}</pre>
-        <a href="?gid={{ groupOfExamples.id }}&eid={{ example.id }}" id="href">Run example</a>
+        <a href="?gid={{ groupOfExamples.id }}&eid={{ example.id }}"
+           data-id="{{ groupOfExamples.id }}-{{ example.id }}"
+           data-action="run-example">Run example</a>
+        <pre id="{{ groupOfExamples.id }}-{{ example.id }}"></pre>
     {% endfor %}
 
     <script src="js/main.js" async></script>
