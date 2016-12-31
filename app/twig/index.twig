@@ -3,6 +3,7 @@
     <link rel="stylesheet" href="css/main.css">
 </head>
 <body id="main">
+    <section class="main-section">
     <h1>{{ groupOfExamples.title }}</h1>
     <p>{{ groupOfExamples.description }}</p>
 
@@ -15,6 +16,7 @@
            data-action="run-example">Run example</a>
         <pre id="{{ groupOfExamples.id }}-{{ example.id }}"></pre>
     {% endfor %}
+    </section>
 
     <script src="js/main.js" async></script>
 </body>

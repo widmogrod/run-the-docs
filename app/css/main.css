@@ -1,4 +1,16 @@
+body {
+    font: 12px/18px "Lucida Grande", Geneva, Arial, Verdana, sans-serif;
+    background-color: #fff;
+    color: #333;
+}
+
 pre {
-    background: #e5e5e5;
+    background: #f0f0f0;
     padding: 20px;
+}
+
+.main-section {
+    margin: 0 auto;
+    width: 600px;
+    overflow: hidden;
 }
