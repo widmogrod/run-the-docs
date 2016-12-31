@@ -38,26 +38,10 @@ class ExampleOfEitherMonadTest extends \PHPUnit\Framework\TestCase
     }
 
     /**
-     * Hohohoho!
+     * Given example demonstrates how `var_dump` result will looks like.
      */
-    public function test_second_example()
+    public function test_var_dump()
     {
-        return 'awesome';
-    }
-
-    /**
-     * BoHohohoho!
-     */
-    public function test_second_example2()
-    {
-        return '66-awesome';
-    }
-
-    /**
-     * OO!
-     */
-    public function test_second_example3()
-    {
-        return 'OO-awesome';
+        var_dump([1, 2, 3]);
     }
 }
