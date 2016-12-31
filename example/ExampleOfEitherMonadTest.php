@@ -36,12 +36,4 @@ class ExampleOfEitherMonadTest extends \PHPUnit\Framework\TestCase
         assert($concat instanceof Either\Left);
         assert($concat->extract() === 'File "./this-file-does-not-exits" does not exists');
     }
-
-    /**
-     * Given example demonstrates how `var_dump` result will looks like.
-     */
-    public function test_var_dump()
-    {
-        var_dump([1, 2, 3]);
-    }
 }
