@@ -32,7 +32,7 @@ class ArrayAt implements At
         $this->items = $items;
     }
 
-    public function count():int
+    public function count(): int
     {
         return count($this->items);
     }
@@ -63,7 +63,7 @@ class AppendedAt implements At
         $this->value = $value;
     }
 
-    public function count():int
+    public function count(): int
     {
         return $this->items->count() + 1;
     }
@@ -141,7 +141,7 @@ class AList implements Listt
         return $this->items->at($this->position);
     }
 
-    public function tail() : Listt
+    public function tail(): Listt
     {
         $next = $this->position + 1;
 
@@ -200,7 +200,7 @@ class TokenClassWithDesc implements Token
         $this->name = $name;
     }
 
-    public function getDesc():string
+    public function getDesc(): string
     {
         return $this->desc->getValue();
     }
@@ -222,7 +222,7 @@ class TokenMethodWithDesc implements Token
         $this->name = $name;
     }
 
-    public function getDesc():string
+    public function getDesc(): string
     {
         return $this->desc->getValue();
     }
@@ -302,7 +302,7 @@ class PHPTokenList extends AList
         }, $list));
     }
 
-    public function head() : PHPToken
+    public function head(): PHPToken
     {
         return parent::head();
     }
@@ -323,7 +323,7 @@ function error(string $reason, PHPToken $token): TokenList
 
 }
 
-function tokenize(PHPTokenList $list) : TokenList
+function tokenize(PHPTokenList $list): TokenList
 {
     if ($list->isEmpty()) {
         return TokenList::fromArray([]);
@@ -538,8 +538,7 @@ function matchBetween(
 //    PatternList $endList,
     PHPTokenList $tokenList,
     MatchList $matchList
-): MatchResult
-{
+): MatchResult {
     return match2($startList, $tokenList, $matchList)
         // we have beginning
         ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
@@ -584,9 +583,19 @@ function matchUntil(callable $check, PHPTokenList $tokenList, MatchList $matchLi
 //      | GroupNode Tree Tree
 //      | CodeNode String
 
+function sanitizie(string $value): string
+{
+    return substr(
+        preg_replace(
+            '/[^\wd]+/'
+            , '', $value
+        )
+        , 0, 5
+    );
+}
+
 interface Tree
 {
-
 }
 
 class DocsNode implements Tree
@@ -601,6 +610,30 @@ class DocsNode implements Tree
         $this->desc = $desc;
         $this->tree = $tree;
     }
+
+    /**
+     * @return string
+     */
+    public function getName(): string
+    {
+        return $this->name;
+    }
+
+    /**
+     * @return string
+     */
+    public function getDesc(): string
+    {
+        return $this->desc;
+    }
+
+    /**
+     * @return Tree
+     */
+    public function getTree(): Tree
+    {
+        return $this->tree;
+    }
 }
 
 class CodeNode implements Tree
@@ -610,6 +643,14 @@ class CodeNode implements Tree
     public function __construct(string $body)
     {
         $this->body = $body;
+    }
+
+    /**
+     * @return string
+     */
+    public function getBody(): string
+    {
+        return $this->body;
     }
 }
 
@@ -624,20 +665,58 @@ class GroupNode implements Tree
         $this->left = $left;
         $this->right = $right;
     }
+
+    /**
+     * @return Tree
+     */
+    public function getLeft(): Tree
+    {
+        return $this->left;
+    }
+
+    /**
+     * @return Tree
+     */
+    public function getRight(): Tree
+    {
+        return $this->right;
+    }
 }
 
-//new Docs('Class', 'desc',
-//    new Group(
-//        new Group(
-//            new Docs('method1', 'desc', new Code('{}')),
-//            new Docs('method2', 'desc', new Code('{}'))
-//        ),
-//        new Group(
-//            new Docs('method3', 'desc', new Code('{}')),
-//            new Docs('method4', 'desc', new Code('{}'))
-//        )
-//    )
-//);
+function show(Tree $tree, int $nested = 0): string
+{
+    if ($tree instanceof GroupNode) {
+        return
+            str_repeat("\t", $nested) .
+            sprintf(
+                "GroupNode(\n%s, \n%s)",
+                show($tree->getLeft(), $nested + 1),
+                show($tree->getRight(), $nested + 1)
+            );
+    }
+
+    if ($tree instanceof DocsNode) {
+        return
+            str_repeat("\t", $nested) .
+            sprintf(
+                "DocsNode(\n%s, \n%s, \n%s)",
+                str_repeat("\t", $nested + 1) . sanitizie($tree->getName()),
+                str_repeat("\t", $nested + 1) . sanitizie($tree->getDesc()),
+                show($tree->getTree(), $nested + 1)
+            );
+    }
+
+    if ($tree instanceof CodeNode) {
+        return
+            str_repeat("\t", $nested) .
+            sprintf(
+                'CodeNode(%s)',
+                sanitizie($tree->getBody())
+            );
+    }
+
+    return ' !none! ';
+}
 
 
 class TreeToken
@@ -672,6 +751,7 @@ function lookAhead(TokenList $list): Token
     if ($list->isEmpty()) {
         return new TokenEnd();
     }
+
     return $list->head();
 }
 
@@ -777,12 +857,13 @@ class PhpunitExtractor implements Extractor
         $tokenizeResult = tokenize($tokenList);
         $result = $tokenizeResult->reduce(function (array $result, Token $token) {
             $result[] = $token;
+
             return $result;
         }, []);
 
 
         $tree = parse(TokenList::fromArray($result));
-        var_dump($tree);
+        echo show($tree);
         die;
 
 //        var_dump($result, '$tokenizeResult');
