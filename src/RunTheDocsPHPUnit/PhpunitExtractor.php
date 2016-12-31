@@ -361,26 +361,6 @@ function tokenize(PHPTokenList $list): TokenList
 
 }
 
-function isClassWithDescription(PHPTokenList $tokenList): bool
-{
-    return match(
-        PatternList::fromArray(
-            [T_DOC_COMMENT, T_WHITESPACE, T_CLASS, T_WHITESPACE, T_STRING]
-        ),
-        $tokenList
-    );
-}
-
-function classWithDescription(PHPTokenList $tokenList): TokenList
-{
-    return TokenList::fromArray([
-        new TokenClassWithDesc(
-            $tokenList->at(4),
-            $tokenList->at(0)
-        )
-    ]);
-}
-
 function isClassWithDescription2(PHPTokenList $tokenList): MatchResult
 {
     return match2(
@@ -396,8 +376,8 @@ function classWithDescription2(MatchList $matchList, PHPTokenList $tokenList): T
 {
     return TokenList::fromArray([
         new TokenClassWithDesc(
-            $matchList->at(4),
-            $matchList->at(0)
+            $matchList->at(0),
+            $matchList->at(4)
         )
     ])->concat(tokenize($tokenList));
 }
@@ -417,8 +397,8 @@ function methodWithDescription2(MatchList $matchList, PHPTokenList $tokenList): 
 {
     return TokenList::fromArray([
         new TokenMethodWithDesc(
-            $matchList->at(6),
-            $matchList->at(0)
+            $matchList->at(0),
+            $matchList->at(6)
         )
     ])->concat(tokenize($tokenList));
 }
@@ -848,6 +828,72 @@ function code(TokenList $tokenList): TreeToken
     throw new \Exception('code: parse error on token: ' . $tokenList->toString());
 }
 
+function dtoGroup(Tree $tree): DTO\GroupOfExamples
+{
+    if ($tree instanceof GroupNode) {
+        $group = dtoGroup($tree->getLeft());
+
+        return new DTO\GroupOfExamples(
+            $group->getId(),
+            $group->getTitle(),
+            $group->getDescription(),
+            array_merge(
+                $group->getExamples(),
+                dtoExamples($tree->getRight())
+            )
+        );
+
+        throw new \Exception('dtoGroup: Not a group :/:' . show($tree));
+    }
+
+    if ($tree instanceof DocsNode) {
+        $next = $tree->getTree();
+        if ($next instanceof DocsNode) {
+            return new DTO\GroupOfExamples(
+                $tree->getName(),
+                $tree->getName(),
+                $tree->getDesc(),
+                dtoExamples($next)
+            );
+        }
+    }
+
+    throw new \Exception('dtoGroup: Dont know how to map token to DTO\GroupOfExamples:' . show($tree));
+}
+
+function dtoExamples(Tree $tree): array
+{
+    if ($tree instanceof GroupNode) {
+        return array_merge(
+            dtoExamples($tree->getLeft()),
+            dtoExamples($tree->getRight())
+        );
+    }
+
+    if ($tree instanceof DocsNode) {
+        return [dtoExample($tree)];
+    }
+
+    throw new \Exception('dtoExample: Dont know how to map token to DTO\Example[]:' . show($tree));
+}
+
+function dtoExample(Tree $tree): DTO\Example
+{
+    if ($tree instanceof DocsNode) {
+        $next = $tree->getTree();
+        if ($next instanceof CodeNode) {
+            return new DTO\Example(
+                $tree->getName(),
+                $tree->getName(),
+                $tree->getDesc(),
+                $next->getBody()
+            );
+        }
+    }
+
+    throw new \Exception('dtoExample: Dont know how to map token to DTO\Example:' . show($tree));
+}
+
 class PhpunitExtractor implements Extractor
 {
     public function extract(ValueObject\File $file): DTO\GroupOfExamples
@@ -863,24 +909,7 @@ class PhpunitExtractor implements Extractor
 
 
         $tree = parse(TokenList::fromArray($result));
-        echo show($tree);
-        die;
 
-//        var_dump($result, '$tokenizeResult');
-//        die;
-
-//        return new DTO\GroupOfExamples(
-//            $c['result']['id'],
-//            $c['result']['title'],
-//            $c['result']['description'],
-//            [
-//                new DTO\Example(
-//                    $m['result']['id'],
-//                    $m['result']['title'],
-//                    $m['result']['description'],
-//                    $m['result']['code']
-//                )
-//            ]
-//        );
+        return dtoGroup($tree);
     }
 }

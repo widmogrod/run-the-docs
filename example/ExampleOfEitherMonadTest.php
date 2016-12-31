@@ -44,4 +44,20 @@ class ExampleOfEitherMonadTest extends \PHPUnit\Framework\TestCase
     {
         return 'awesome';
     }
+
+    /**
+     * BoHohohoho!
+     */
+    public function test_second_example2()
+    {
+        return '66-awesome';
+    }
+
+    /**
+     * OO!
+     */
+    public function test_second_example3()
+    {
+        return 'OO-awesome';
+    }
 }
