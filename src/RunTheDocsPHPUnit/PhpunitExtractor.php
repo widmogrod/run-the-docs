@@ -860,7 +860,7 @@ function dtoExamples(Tree $tree): array
         return [dtoExample($tree)];
     }
 
-    throw new \Exception('dtoExample: Dont know how to map token to DTO\Example[]:' . show($tree));
+    throw new \Exception('dtoExamples: Dont know how to map token to DTO\Example[]:' . show($tree));
 }
 
 function dtoExample(Tree $tree): DTO\Example
