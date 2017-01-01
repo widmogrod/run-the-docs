@@ -108,8 +108,14 @@ before_setup:
  - composer install
 ```
 
-## Pipeline
+
+## Markdown generator from default config(?)
+```bash
+bin/runthendoc run
 ```
+
+## Pipeline
+```bash
 bin/runthedoc extract --type=phpunit example/ > runthedocs.json
 bin/runthedoc generate --type=markdown --state=runthedocs.json --runner=http://localhost:8080/$id dir/
 bin/runthedoc runner --type=phpunit --state=runthedocs.json localhost:8080 
