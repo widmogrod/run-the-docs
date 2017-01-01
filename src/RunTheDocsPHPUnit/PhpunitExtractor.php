@@ -329,39 +329,25 @@ function tokenize(PHPTokenList $list): TokenList
         return TokenList::fromArray([]);
     }
 
-//    if (isClassWithDescription($list)) {
-//        return classWithDescription($list);
-//    }
-
-    return isClassWithDescription2($list)
+    return isClassWithDescription($list)
         ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
-            return classWithDescription2($matchList, $tokenList);
+            return classWithDescription($matchList, $tokenList);
         }, function () use ($list) {
-            return isMethodWithDescription2($list)
+            return isMethodWithDescription($list)
                 ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
-                    return methodWithDescription2($matchList, $tokenList);
+                    return methodWithDescription($matchList, $tokenList);
                 }, function () use ($list) {
                     return isMethodBody($list)
                         ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
-                            return methodBody2($matchList, $tokenList);
+                            return methodBody($matchList, $tokenList);
                         }, function () use ($list) {
                             return tokenize($list->tail());
                         });
                 });
         });
-
-//    return tokenize($list->tail());
-
-//    elseif (isMethodWithDescription($list)) {
-//        return methodWithDescription($list);
-//    } elseif (isMethodBody($list)) {
-//        return methodBody($list);
-//    }
-
-
 }
 
-function isClassWithDescription2(PHPTokenList $tokenList): MatchResult
+function isClassWithDescription(PHPTokenList $tokenList): MatchResult
 {
     return match2(
         PatternList::fromArray(
@@ -372,7 +358,7 @@ function isClassWithDescription2(PHPTokenList $tokenList): MatchResult
     );
 }
 
-function classWithDescription2(MatchList $matchList, PHPTokenList $tokenList): TokenList
+function classWithDescription(MatchList $matchList, PHPTokenList $tokenList): TokenList
 {
     return TokenList::fromArray([
         new TokenClassWithDesc(
@@ -382,7 +368,7 @@ function classWithDescription2(MatchList $matchList, PHPTokenList $tokenList): T
     ])->concat(tokenize($tokenList));
 }
 
-function isMethodWithDescription2(PHPTokenList $tokenList): MatchResult
+function isMethodWithDescription(PHPTokenList $tokenList): MatchResult
 {
     return match2(
         PatternList::fromArray(
@@ -393,7 +379,7 @@ function isMethodWithDescription2(PHPTokenList $tokenList): MatchResult
     );
 }
 
-function methodWithDescription2(MatchList $matchList, PHPTokenList $tokenList): TokenList
+function methodWithDescription(MatchList $matchList, PHPTokenList $tokenList): TokenList
 {
     return TokenList::fromArray([
         new TokenMethodWithDesc(
@@ -413,7 +399,7 @@ function isMethodBody(PHPTokenList $tokenList): MatchResult
     );
 }
 
-function methodBody2(MatchList $matchList, PHPTokenList $tokenList): TokenList
+function methodBody(MatchList $matchList, PHPTokenList $tokenList): TokenList
 {
     return TokenList::fromArray([
         new TokenMethodBody(
