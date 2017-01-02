@@ -1,0 +1,29 @@
+{
+    "name": "widmogrod/run-the-docs",
+    "description": "Keep code and documentation in sync. Run code examples in a browser",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "widmogrod",
+            "email": "widmogrod@gmail.com"
+        }
+    ],
+    "bin": ["bin/runthedocs"],
+    "autoload": {
+        "psr-0": {
+            "RunTheDocs": "src/"
+        }
+    },
+    "scripts": {
+        "server": "php -S localhost:8877 -t app/"
+    },
+    "require": {
+        "phpdocumentor/reflection-docblock": "^3.1",
+        "symfony/console": "^3.2"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^5.7",
+        "widmogrod/php-functional": "^3.0",
+        "twig/twig": "~1.0"
+    }
+}

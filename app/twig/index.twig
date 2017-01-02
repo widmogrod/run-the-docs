@@ -1,0 +1,24 @@
+<html>
+<head>
+    <link rel="stylesheet" href="css/main.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+</head>
+<body id="main">
+    <section class="content">
+    <h1>{{ groupOfExamples.title }}</h1>
+    <p>{{ groupOfExamples.description }}</p>
+
+    {% for example in groupOfExamples.examples %}
+        <h2>{{ example.title }}</h2>
+        <p>{{ example.description }}</p>
+        <pre class="code">{{ example.code }}</pre>
+        <a href="?gid={{ groupOfExamples.id }}&eid={{ example.id }}"
+           data-id="{{ groupOfExamples.id }}-{{ example.id }}"
+           data-action="run-example">Run example</a>
+        <pre class="result" id="{{ groupOfExamples.id }}-{{ example.id }}"></pre>
+    {% endfor %}
+    </section>
+
+    <script src="js/main.js" async></script>
+</body>
+</html>
