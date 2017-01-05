@@ -337,10 +337,24 @@ function tokenize(PHPTokenList $list): TokenList
                 ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
                     return methodWithDescription($matchList, $tokenList);
                 }, function () use ($list) {
-                    return isMethodBody($list)
-                        ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
-                            return methodBody($matchList, $tokenList);
+//                    return isMethodBody($list)
+//                        ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
+//                            return methodBody($matchList, $tokenList);
+//                        }, function () use ($list) {
+//                            return tokenize($list->tail());
+//                        });
+                    return isMethodArgs($list)
+                        ->then(function (MatchList $matchList, PHPTokenList $tokenList) use ($list) {
+                            // skip to the body,
+                            // do not generate args token - yet
+                            return isMethodBody($tokenList->tail())
+                                ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
+                                    return methodBody($matchList, $tokenList);
+                                }, function () use ($list) {
+                                    return tokenize($list->tail());
+                                });
                         }, function () use ($list) {
+                            // is this ok?
                             return tokenize($list->tail());
                         });
                 });
@@ -389,13 +403,26 @@ function methodWithDescription(MatchList $matchList, PHPTokenList $tokenList): T
     ])->concat(tokenize($tokenList));
 }
 
-function isMethodBody(PHPTokenList $tokenList): MatchResult
+function isMethodArgs(PHPTokenList $tokenList): MatchResult
 {
-    return matchBetween(
-        PatternList::fromArray(['(', ')', T_WHITESPACE, '{']),
+    return match(
+        PatternList::fromArray(['(']),
         $tokenList,
         MatchList::fromArray([])
-    );
+    )->then(matchBetween('(', ')'), function () {
+        return new Miss();
+    });
+}
+
+function isMethodBody(PHPTokenList $tokenList): MatchResult
+{
+    return match(
+        PatternList::fromArray(['{']),
+        $tokenList,
+        MatchList::fromArray([])
+    )->then(matchBetween('{', '}'), function () {
+        return new Miss();
+    });
 }
 
 function methodBody(MatchList $matchList, PHPTokenList $tokenList): TokenList
@@ -474,34 +501,29 @@ function match(PatternList $patternList, PHPTokenList $tokenList, MatchList $mat
 }
 
 function matchBetween(
-    PatternList $startList,
-    PHPTokenList $tokenList,
-    MatchList $matchList
-): MatchResult {
-    return match($startList, $tokenList, $matchList)
-        // we have beginning
-        ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
-            // mach between
-            return matchUntil(function (PHPToken $token, MatchList $matchedList) {
-                if (!$token->match('}')) {
-                    return false;
-                }
+    string $openChar,
+    string $closeChar
+) {
+    return function (MatchList $matchList, PHPTokenList $tokenList) use ($openChar, $closeChar) {
+        // mach between
+        return matchUntil(function (PHPToken $token, MatchList $matchedList) use ($openChar, $closeChar) {
+            if (!$token->match($closeChar)) {
+                return false;
+            }
 
-                $eql = function ($value) {
-                    return function ($count, PHPToken $matched) use ($value) {
-                        return $value === (string)$matched ? $count + 1 : $count;
-                    };
+            $eql = function ($value) {
+                return function ($count, PHPToken $matched) use ($value) {
+                    return $value === (string)$matched ? $count + 1 : $count;
                 };
+            };
 
-                $open = $matchedList->reduce($eql('{'), 0);
-                $close = $matchedList->reduce($eql('}'), 0);
+            $open = $matchedList->reduce($eql($openChar), 0);
+            $close = $matchedList->reduce($eql($closeChar), 0);
 
-                return $open === $close;
+            return $open === $close;
 
-            }, $tokenList, MatchList::fromArray([]));
-        }, function () {
-            return new Miss();
-        });
+        }, $tokenList, MatchList::fromArray([]));
+    };
 }
 
 function matchUntil(callable $check, PHPTokenList $tokenList, MatchList $matchList): MatchResult
