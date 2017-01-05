@@ -349,7 +349,7 @@ function tokenize(PHPTokenList $list): TokenList
 
 function isClassWithDescription(PHPTokenList $tokenList): MatchResult
 {
-    return match2(
+    return match(
         PatternList::fromArray(
             [T_DOC_COMMENT, T_WHITESPACE, T_CLASS, T_WHITESPACE, T_STRING]
         ),
@@ -370,7 +370,7 @@ function classWithDescription(MatchList $matchList, PHPTokenList $tokenList): To
 
 function isMethodWithDescription(PHPTokenList $tokenList): MatchResult
 {
-    return match2(
+    return match(
         PatternList::fromArray(
             [T_DOC_COMMENT, T_WHITESPACE, T_PUBLIC, T_WHITESPACE, T_FUNCTION, T_WHITESPACE, T_STRING]
         ),
@@ -411,31 +411,6 @@ function methodBody(MatchList $matchList, PHPTokenList $tokenList): TokenList
 class PatternList extends AList
 {
 
-}
-
-
-// match [] _ : true
-// match _ []: false
-// match [p:px] [t:tx] => p == t ? match(px, tx) : false
-
-
-function match(PatternList $patternList, PHPTokenList $tokenList): bool
-{
-    if ($patternList->isEmpty()) {
-        var_dump('$list->isEmpty()');
-
-        return true;
-    }
-
-    if ($tokenList->isEmpty()) {
-        var_dump('$tokenList->isEmpty()');
-
-        return false;
-    }
-
-    return $tokenList->head()->match($patternList->head())
-        ? match($patternList->tail(), $tokenList->tail())
-        : false;
 }
 
 interface MatchResult
@@ -479,7 +454,7 @@ class MatchList extends AList
 }
 
 
-function match2(PatternList $patternList, PHPTokenList $tokenList, MatchList $matchList): MatchResult
+function match(PatternList $patternList, PHPTokenList $tokenList, MatchList $matchList): MatchResult
 {
     if ($patternList->isEmpty()) {
         return new Matched($matchList, $tokenList);
@@ -493,7 +468,7 @@ function match2(PatternList $patternList, PHPTokenList $tokenList, MatchList $ma
     $token = $tokenList->head();
 
     if ($token->match($pattern)) {
-        return match2($patternList->tail(), $tokenList->tail(), $matchList->append($token));
+        return match($patternList->tail(), $tokenList->tail(), $matchList->append($token));
     }
 
     return new Miss();
@@ -505,7 +480,7 @@ function matchBetween(
     PHPTokenList $tokenList,
     MatchList $matchList
 ): MatchResult {
-    return match2($startList, $tokenList, $matchList)
+    return match($startList, $tokenList, $matchList)
         // we have beginning
         ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
             // mach between
