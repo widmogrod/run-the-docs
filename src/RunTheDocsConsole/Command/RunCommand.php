@@ -21,12 +21,20 @@ class RunCommand extends Command
         $generator = new \RunTheDocs\Generator\Markdown\Markdown();
 
         foreach (glob($config->examples) as $file) {
-            $vo = new \RunTheDocs\Extractor\ValueObject\File($file);
-            $dto = $extractor->extract($vo);
-            $output = $generator->generate($dto);
-            $name = basename($file) . '.md';
-            $path = $config->output . '/' . $name;
-            file_put_contents($path, $output);
+            try {
+                $vo = new \RunTheDocs\Extractor\ValueObject\File($file);
+                $dto = $extractor->extract($vo);
+                $output = $generator->generate($dto);
+                $name = basename($file) . '.md';
+                $path = $config->output . '/' . $name;
+                file_put_contents($path, $output);
+            } catch (\Throwable $e) {
+                throw new \Exception(
+                    sprintf('Error processing file %s', $file),
+                    1,
+                    $e
+                );
+            }
         }
     }
 }
