@@ -393,7 +393,6 @@ function isMethodBody(PHPTokenList $tokenList): MatchResult
 {
     return matchBetween(
         PatternList::fromArray(['(', ')', T_WHITESPACE, '{']),
-//        PatternList::fromArray(['}']),
         $tokenList,
         MatchList::fromArray([])
     );
@@ -476,7 +475,6 @@ function match(PatternList $patternList, PHPTokenList $tokenList, MatchList $mat
 
 function matchBetween(
     PatternList $startList,
-//    PatternList $endList,
     PHPTokenList $tokenList,
     MatchList $matchList
 ): MatchResult {
