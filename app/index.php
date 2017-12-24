@@ -3,7 +3,7 @@ require_once __DIR__ . '/../vendor/autoload.php';
 
 $extractor = new \RunTheDocsPHPUnit\PhpunitExtractor();
 $dto = $extractor->extract(new \RunTheDocs\Extractor\ValueObject\File(
-    __DIR__ . '/../example/ExampleOfEitherMonadTest.php'
+    __DIR__ . '/../example/ExampleOfVarDumpTest.php'
 ));
 
 if (isset($_GET['gid']) && isset($_GET['eid'])) {
