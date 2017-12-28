@@ -1,7 +1,8 @@
 <?php
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$extractor = new \RunTheDocsPHPUnit\PhpunitExtractor();
+$parser = (new \PhpParser\ParserFactory)->create(\PhpParser\ParserFactory::PREFER_PHP7);
+$extractor = new \RunTheDocsPHPUnit\PhpunitAstExtractor($parser);
 $dto = $extractor->extract(new \RunTheDocs\Extractor\ValueObject\File(
     __DIR__ . '/../example/ExampleOfVarDumpTest.php'
 ));

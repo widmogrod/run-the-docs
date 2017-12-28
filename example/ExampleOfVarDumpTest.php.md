@@ -10,9 +10,7 @@
      */
 
 ```php
-
-        var_dump([1, 2, 3]);
-    
+var_dump([1, 2, 3]);
 ```
 
 
@@ -22,9 +20,7 @@
      */
 
 ```php
-
-        var_dump($value);
-    
+var_dump($value);
 ```
 
 
@@ -34,9 +30,7 @@
      */
 
 ```php
-
-        var_dump($value);
-    
+var_dump($value);
 ```
 
 
@@ -45,11 +39,5 @@
      */
 
 ```php
-
-        return [
-            'random input' => [
-                '$value' => mt_rand(),
-            ],
-        ];
-    
+return ['random input' => ['$value' => mt_rand()]];
 ```

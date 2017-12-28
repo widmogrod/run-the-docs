@@ -17,7 +17,8 @@ class RunCommand extends Command
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $config = new Config();
-        $extractor = new \RunTheDocsPHPUnit\PhpunitExtractor();
+        $parser = (new \PhpParser\ParserFactory)->create(\PhpParser\ParserFactory::PREFER_PHP7);
+        $extractor = new \RunTheDocsPHPUnit\PhpunitAstExtractor($parser);
         $generator = new \RunTheDocs\Generator\Markdown\Markdown();
 
         foreach (glob($config->examples) as $file) {
