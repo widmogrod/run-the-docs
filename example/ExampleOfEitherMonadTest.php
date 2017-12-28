@@ -4,6 +4,17 @@ use function Widmogrod\Functional\liftM2;
 use Widmogrod\Monad\Either;
 
 /**
+ * # Intro!
+ */
+
+/**
+ * ## Yes this is sub title
+ */
+function somethingAwesome() {
+
+}
+
+/**
  * In php world, the most popular way of saying that something went wrong is to throw an exception.
  * This results in nasty try catch blocks and many of if statements.
  *

@@ -5,6 +5,55 @@ use RunTheDocs\DTO;
 use RunTheDocs\Extractor\Extractor;
 use RunTheDocs\Extractor\ValueObject;
 
+interface First
+{
+    public function getFirst();
+}
+
+interface Second
+{
+    public function getSecond();
+}
+
+class Tuple implements First, Second
+{
+    private $first;
+    private $second;
+
+    public function __construct($first, $second)
+    {
+        $this->first = $first;
+        $this->second = $second;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getFirst()
+    {
+        return $this->first;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getSecond()
+    {
+        return $this->second;
+    }
+}
+
+function fst(First $first)
+{
+    return $first->first();
+}
+
+function snd(Second $second)
+{
+    return $second->second();
+}
+
+
 interface ListEmpty
 {
     public function isEmpty(): bool;
@@ -209,6 +258,11 @@ class TokenClassWithDesc implements Token
     {
         return $this->name->getValue();
     }
+
+    public function __toString()
+    {
+        return (string)$this->name;
+    }
 }
 
 class TokenMethodWithDesc implements Token
@@ -230,6 +284,11 @@ class TokenMethodWithDesc implements Token
     public function getName(): string
     {
         return $this->name->getValue();
+    }
+
+    public function __toString()
+    {
+        return (string)$this->name;
     }
 }
 
@@ -313,7 +372,7 @@ class TokenList extends AList
     public function toString()
     {
         return $this->reduce(function (string $result, Token $token) {
-            return $result . sprintf('%s()', get_class($token));
+            return $result . sprintf('%s(%s)', get_class($token), $token);
         }, '');
     }
 }
@@ -333,8 +392,10 @@ function tokenize(PHPTokenList $list): TokenList
         ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
             return classWithDescription($matchList, $tokenList);
         }, function () use ($list) {
+            // TODO FIX wrong detection of method for function?
             return isMethodWithDescription($list)
                 ->then(function (MatchList $matchList, PHPTokenList $tokenList) {
+                    // heare should be isMethodArgs
                     return methodWithDescription($matchList, $tokenList);
                 }, function () use ($list) {
 //                    return isMethodBody($list)

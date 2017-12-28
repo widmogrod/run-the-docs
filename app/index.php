@@ -1,10 +1,18 @@
 <?php
 require_once __DIR__ . '/../vendor/autoload.php';
 
-$extractor = new \RunTheDocsPHPUnit\PhpunitExtractor();
+$parser = (new \PhpParser\ParserFactory)->create(\PhpParser\ParserFactory::PREFER_PHP7);
+$extractor = new \RunTheDocsPHPUnit\PhpunitAstExtractor($parser);
 $dto = $extractor->extract(new \RunTheDocs\Extractor\ValueObject\File(
     __DIR__ . '/../example/ExampleOfEitherMonadTest.php'
 ));
+
+$docBlockFactory  = \phpDocumentor\Reflection\DocBlockFactory::createInstance();
+$traverser = new \RunTheDocs\DTO\Traverser\UnDocBlockDecorator($docBlockFactory);
+$dto = $traverser->traverse($dto);
+
+$traverser = new \RunTheDocs\DTO\Traverser\TitleHumanizeDecorator();
+$dto = $traverser->traverse($dto);
 
 if (isset($_GET['gid']) && isset($_GET['eid'])) {
     // executed

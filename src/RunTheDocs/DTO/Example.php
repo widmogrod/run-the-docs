@@ -1,6 +1,7 @@
 <?php
 namespace RunTheDocs\DTO;
 
+// type Docs a = Example a | GroupOfExamples a (Docs a)
 class Example
 {
     /**
