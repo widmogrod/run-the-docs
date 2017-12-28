@@ -37,8 +37,10 @@ class UnDocBlockDecorator implements Traverser
         );
     }
 
-    private function unDoc(string $docBlock): string
+    private function unDoc(?string $docBlock): ?string
     {
-        return $this->blockFactory->create($docBlock)->getDescription();
+        return $docBlock
+            ? $this->blockFactory->create($docBlock)->getDescription()
+            : $docBlock;
     }
 }
