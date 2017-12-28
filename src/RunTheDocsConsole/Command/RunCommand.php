@@ -21,10 +21,18 @@ class RunCommand extends Command
         $extractor = new \RunTheDocsPHPUnit\PhpunitAstExtractor($parser);
         $generator = new \RunTheDocs\Generator\Markdown\Markdown();
 
+        $docBlockFactory  = \phpDocumentor\Reflection\DocBlockFactory::createInstance();
+        $unDock = new \RunTheDocs\DTO\Traverser\UnDocBlockDecorator($docBlockFactory);
+        $humanize = new \RunTheDocs\DTO\Traverser\TitleHumanizeDecorator();
+
         foreach (glob($config->examples) as $file) {
             try {
                 $vo = new \RunTheDocs\Extractor\ValueObject\File($file);
                 $dto = $extractor->extract($vo);
+                $dto = $unDock->traverse($dto);
+                $dto = $humanize->traverse($dto);
+
+
                 $output = $generator->generate($dto);
                 $name = basename($file) . '.md';
                 $path = $config->output . '/' . $name;

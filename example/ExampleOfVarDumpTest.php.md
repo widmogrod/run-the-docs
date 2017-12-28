@@ -1,42 +1,33 @@
-# ExampleOfVarDumpTest
-/**
- * This example set aims to teach you how `var` dump represents different values
- */
+# Example Of Var Dump Test
 
 
-## test_var_dump
-/**
-     * Given example demonstrates how `var_dump` result will looks like.
-     */
+
+## Test Var Dump
+
 
 ```php
 var_dump([1, 2, 3]);
 ```
 
 
-## test_value_is_injected
-/**
-     * @dataProvider provideData
-     */
+## Test Value Is Injected
+
 
 ```php
 var_dump($value);
 ```
 
 
-## test_value_is_injected_second_time
-/**
-     * @dataProvider provideData
-     */
+## Test Value Is Injected Second Time
+
 
 ```php
 var_dump($value);
 ```
 
 
-## provideData
-/**
-     */
+## Provide Data
+
 
 ```php
 return ['random input' => ['$value' => mt_rand()]];

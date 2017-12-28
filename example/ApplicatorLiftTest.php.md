@@ -1,11 +1,9 @@
-# ApplicatorLiftTest
-/**
- */
+# Applicator Lift Test
 
 
-## test_it_should_sum_all_from_one_list_with_elements_from_second
-/**
-     */
+
+## Test It Should Sum All From One List With Elements From Second
+
 
 ```php
 $listA = Listt::of([1, 2]);
@@ -17,9 +15,8 @@ $this->assertEquals([5, 6, 6, 7], f\valueOf($result));
 ```
 
 
-## test_it_should_sum_all_from_one_list_with_single_element
-/**
-     */
+## Test It Should Sum All From One List With Single Element
+
 
 ```php
 // sum <$> [1, 2] <*> [4, 5]
