@@ -47,9 +47,11 @@ class ExampleExtractorVisitor extends NodeVisitorAbstract
         return $result;
     }
 
-    private function getBody(\PhpParser\Node\Stmt\ClassMethod $node)
+    private function getBody(\PhpParser\Node\Stmt\ClassMethod $node): string
     {
-        return $this->prettyPrinter->prettyPrint($node->getStmts());
+        return $node->getStmts()
+            ? $this->prettyPrinter->prettyPrint($node->getStmts())
+            : "";
     }
 
     public function enterNode(Node $node)
