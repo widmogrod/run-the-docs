@@ -26,9 +26,12 @@ class TitleHumanizeDecorator implements Traverser
         );
     }
 
-    private function humanize(string $string): string
+    private function humanize(?string $string): ?string
     {
-        $string = preg_split('/(?=[A-Z])|_/',$string);
+        if (!$string) {
+            return $string;
+        }
+        $string = preg_split('/(?=[A-Z])|_/', (string) $string);
         $string = array_filter($string);
         return ucwords(join(' ', $string));
     }
